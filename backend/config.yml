@@ -1,0 +1,21 @@
+# Discord webhook URL for sending notifications
+# Required: Yes
+# Example: https://discord.com/api/webhooks/123456789/abcdef...
+discord_webhook_url: "https://discord.com/api/webhooks/1347735766071250965/zC_CTMsCXTuG0C9MHSb_mVaiv5fFvPn7da3w8suL_IYzrvezHnYhywKX3mf9QStEFSvG"
+
+# Number of products to save in each batch operation
+# Required: No
+# Default: 100
+save_batch_size: 100
+
+# Base URL for the Unifi store
+# Required: No
+# Default: https://store.ui.com/us/en
+home_url: "https://store.ui.com/us/en"
+
+# File path for storing product information
+# Required: No
+# Default: products.json
+products_file: "products.json"
+
+jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYXBpIiwidGltZXN0YW1wIjoxNzQ0MzQ0MTAyMjU0LCJpYXQiOjE3NDQzNDQxMDIsImV4cCI6MTc0NDQzMDUwMn0.cHS-NBWOhMbmcSLhl-LzrngwbXKMOcR9Q3xN7A_yJN0"
