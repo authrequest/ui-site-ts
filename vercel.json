@@ -2,11 +2,8 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/cmd/monitor/main.go",
-      "use": "@vercel/go",
-      "config": {
-        "maxDuration": 60
-      }
+      "src": "api/index.go",
+      "use": "@vercel/go"
     },
     {
       "src": "package.json",
@@ -19,7 +16,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/cmd/monitor/main.go"
+      "dest": "/api/index.go"
     },
     {
       "src": "/(.*)",
