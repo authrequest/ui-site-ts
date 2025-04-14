@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backend": "cd backend && go run main.go",
+    "dev:all": "concurrently \"pnpm run dev\" \"pnpm run backend\"",
+    "vercel-build": "pnpm run build",
+    "start": "vite preview --port $PORT"
   },
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.13.3",
@@ -21,6 +25,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^8.2.2",
     "daisyui": "^5.0.19",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",

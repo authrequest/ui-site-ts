@@ -37,6 +37,7 @@ type UnifiStore struct {
 	initialized     bool
 	pendingProducts []models.Product
 	apiURL          string
+	products        []models.Product
 }
 
 func New(cfg *config.Config) *UnifiStore {
@@ -243,6 +244,10 @@ func (s *UnifiStore) sendToAPI(product models.Product) error {
 	}
 
 	return nil
+}
+
+func (s *UnifiStore) GetProducts() []models.Product {
+	return s.products
 }
 
 func (s *UnifiStore) Start() {

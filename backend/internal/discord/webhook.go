@@ -7,8 +7,8 @@ import (
 	"io"
 	"time"
 
-	customhttp "all-unifi-monitor/internal/http"
 	"all-unifi-monitor/internal/models"
+	customhttp "all-unifi-monitor/internal/server"
 	"all-unifi-monitor/pkg/logger"
 
 	http "github.com/saucesteals/fhttp"
