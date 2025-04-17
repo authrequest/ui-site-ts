@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css'
 
 import type { Product } from './types/product'
-import { fetchProducts } from './services/api';
 import KoFiButton from './components/KofiButton';
 
 interface ConnectionState {
@@ -31,38 +30,25 @@ function App() {
 
   // Load initial products
   useEffect(() => {
-    const loadProducts = async () => {
+    const fetchInitialProducts = async () => {
       try {
-        setLoadingState(prev => ({ ...prev, isLoading: true }));
-        const data = await fetchProducts();
-        setLoadingState({ isLoading: false, products: data });
-        setConnectionState(prev => ({ ...prev, error: null }));
-      } catch (err) {
-        const errorMessage = err instanceof Error 
-          ? err.message 
-          : 'Failed to load products. Please check your internet connection and try again.';
-        
-        setConnectionState(prev => ({
+        const response = await fetch('http://localhost:3001/api/products');
+        const products = await response.json();
+        setLoadingState(prev => ({
           ...prev,
-          error: errorMessage
+          products,
+          isLoading: false
         }));
-        
-        // Show error toast
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "dark"
-        });
-      } finally {
-        setLoadingState(prev => ({ ...prev, isLoading: false }));
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoadingState(prev => ({
+          ...prev,
+          isLoading: false
+        }));
       }
     };
-
-    void loadProducts();
+    
+    fetchInitialProducts();
   }, []);
 
   // Show notification for new product
@@ -81,107 +67,70 @@ function App() {
     });
   }, []);
 
-  // Handle SSE connection with reconnection logic
+  // Handle WebSocket connection with reconnection logic
   useEffect(() => {
-    let eventSource: EventSource | null = null;
-    let reconnectTimeout: number;
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    const baseReconnectDelay = 1000;
-
+    let socket: WebSocket | null = null;
+    
     const connect = () => {
-      if (eventSource) {
-        eventSource.close();
-      }
-
-      try {
-        eventSource = new EventSource('http://localhost:8080/api/products/updates');
-        
-        eventSource.onopen = () => {
-          setConnectionState(prev => ({
-            ...prev,
-            status: 'connected',
-            error: null
-          }));
-          reconnectAttempts = 0;
-        };
-
-        eventSource.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data) as { type: string; products: Product[] };
-            if (data.type === 'heartbeat') return;
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+      socket = new WebSocket(`${wsProtocol}://${window.location.hostname}:3001`);
+      
+      socket.onopen = () => {
+        console.log('WebSocket connected');
+        setConnectionState(prev => ({
+          ...prev,
+          status: 'connected',
+          error: null
+        }));
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Received WebSocket message:', data);
+          
+          if (data.type === 'new-product') {
+            // Update products state first
+            setLoadingState(prev => ({
+              ...prev,
+              products: [data.product, ...prev.products]
+            }));
             
-            if (data.type === 'update') {
-              setLoadingState(prev => ({ ...prev, products: data.products }));
-              if (data.products.length > 0) {
-                showNotification(data.products[0]);
-              }
-            }
-          } catch (parseError) {
-            console.error('Failed to parse SSE message:', parseError);
+            // Then show notification after a small delay
+            setTimeout(() => {
+              showNotification(data.product);
+            }, 100);
           }
-        };
-
-        eventSource.onerror = () => {
-          eventSource?.close();
-          setConnectionState(prev => ({
-            ...prev,
-            status: 'disconnected'
-          }));
-
-          if (reconnectAttempts < maxReconnectAttempts) {
-            setConnectionState(prev => ({
-              ...prev,
-              status: 'reconnecting'
-            }));
-            const delay = Math.min(baseReconnectDelay * Math.pow(2, reconnectAttempts), 10000);
-            reconnectTimeout = window.setTimeout(() => {
-              reconnectAttempts++;
-              connect();
-            }, delay);
-          } else {
-            const errorMessage = 'Connection lost. Please check your internet connection and refresh the page.';
-            setConnectionState(prev => ({
-              ...prev,
-              error: errorMessage
-            }));
-            toast.error(errorMessage, {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              theme: "dark"
-            });
-          }
-        };
-      } catch {
-        const errorMessage = 'Failed to establish connection. Please check your internet connection.';
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+      
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
         setConnectionState(prev => ({
           ...prev,
           status: 'disconnected',
-          error: errorMessage
+          error: 'Connection error. Retrying...'
         }));
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "dark"
-        });
-      }
+      };
+      
+      socket.onclose = () => {
+        console.log('WebSocket disconnected');
+        setConnectionState(prev => ({
+          ...prev,
+          status: 'disconnected'
+        }));
+        setTimeout(connect, 5000);
+      };
     };
-
+    
     connect();
-
+    
     return () => {
-      if (eventSource) {
-        eventSource.close();
+      if (socket) {
+        socket.close();
       }
-      clearTimeout(reconnectTimeout);
     };
   }, [showNotification]);
 
@@ -234,11 +183,13 @@ function App() {
     }
   }, [loadingState.products]);
 
-  if (loadingState.isLoading && loadingState.products.length === 0) {
+  const visibleProducts = useMemo(() => loadingState.products.slice(0, 6), [loadingState.products]);
+
+  if (loadingState.isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen">
+      <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="text-2xl font-bold mb-4 animate-pulse">Loading Feed</div>
+          <div className="text-2xl font-bold mb-4 animate-pulse">Loading Products</div>
           <DotLottieReact
             src="https://lottie.host/e9cb5930-293a-45b8-8db0-b0c36deb7636/rsePl0BPNl.lottie"
             loop
@@ -260,46 +211,44 @@ function App() {
               <img src="/favicon.ico" alt="Monitor Icon" className="w-6 h-6" />
             </div>
             <div className={`connection-status ${connectionState.status} text-center mt-2`}>
-              {connectionState.status === 'connected' && <span className="animate-pulse">🟢 Connected</span>}
-              {connectionState.status === 'disconnected' && <span className="animate-pulse">🔴 Disconnected</span>}
-              {connectionState.status === 'reconnecting' && <span className="animate-pulse">🟡 Reconnecting...</span>}
+              {connectionState.status === 'connected' && <span className="text-green-500">🟢 Connected</span>}
+              {connectionState.status === 'disconnected' && <span className="text-red-500">🔴 Disconnected</span>}
+              {connectionState.error && <span className="text-red-500">{connectionState.error}</span>}
             </div>
           </div>
         </header>
 
-        {connectionState.error && <div className="error text-red-500">{connectionState.error}</div>}
-
-        <div className="max-w-[800px] w-full space-y-6 px-4">
+        <div className="max-w-[800px] w-full space-y-5 px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loadingState.products.map((product) => (
+            {visibleProducts.map((product) => (
               <div 
                 key={product.id} 
                 className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
               >
-                <figure className="px-4 pt-4">
+                <figure className="px-2 pt-2">
                   <img 
                     src={product.thumbnail.url} 
                     alt={product.title} 
-                    className="rounded-xl h-48 w-full object-cover"
+                    className="rounded-xl h-24 w-full object-cover"
                   />
                 </figure>
-                <div className="card-body">
-                  <h2 className="card-title text-center">
+                <div className="card-body p-3">
+                  <h2 className="card-title text-center text-base mb-1">
                     {product.title}
                   </h2>
-                  <div className="flex justify-center">
-                    <span className="text-lg font-bold text-primary">
+                  <div className="flex justify-center mb-1">
+                    <span className="text-base font-bold text-primary">
                       ${product.variants[0].displayPrice.amount / 100}
                       {' '}
                       {product.variants[0].displayPrice.currency}
                     </span>
                   </div>
-                  <p className="text-sm text-base-content/70 text-center">
+                  <p className="text-xs text-base-content/70 text-center mb-2">
                     {product.shortDescription}
                   </p>
-                  <div className="card-actions justify-center mt-4">
+                  <div className="card-actions justify-center mt-2">
                     <button 
-                      className="btn btn-primary w-full"
+                      className="btn btn-primary w-full btn-sm"
                       onClick={() => handleProductClick(product.id)}
                     >
                       View Product

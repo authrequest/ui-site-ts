@@ -1,9 +1,0 @@
-.git
-.gitignore
-.cursor
-.vscode
-node_modules
-*.log
-.env
-.env.*
-README.md 

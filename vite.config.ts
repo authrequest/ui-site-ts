@@ -15,4 +15,15 @@ export default defineConfig({
         id: "GTM-PNBFB2FT",
       },
     }),],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Example: Split react and react-dom into a separate chunk
+          'react-vendors': ['react', 'react-dom'],
+          // You can add more: 'ui-libs': ['@mui/material', 'react-toastify']
+        }
+      }
+    }
+  }
 })
