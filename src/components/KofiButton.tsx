@@ -1,5 +1,3 @@
-// import React from 'react';
-
 export default function KoFiButton() {
   return (
     <div className="fixed bottom-4 left-4 z-50">

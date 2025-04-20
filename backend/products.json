@@ -7587,24 +7587,6 @@
     ]
   },
   {
-    "id": "f33f0978-61ef-403d-915f-3445e1cf6fa1",
-    "title": "Hot-Swappable Fan Module",
-    "shortDescription": "Hot-swappable fan module with front-to-back airflow.",
-    "slug": "uacc-fan-4020",
-    "thumbnail": {
-      "url": "https://cdn.ecomm.ui.com/products/f33f0978-61ef-403d-915f-3445e1cf6fa1/4d3f28b1-a5e2-48a7-a1aa-37f6494f5973.png"
-    },
-    "variants": [
-      {
-        "id": "39842126-e1ed-4d87-84b6-66e7e4c69f15",
-        "displayPrice": {
-          "amount": 6900,
-          "currency": "USD"
-        }
-      }
-    ]
-  },
-  {
     "id": "b512f2e2-faf0-427c-97af-57b8cb1611e9",
     "title": "DIN Rail Mount",
     "shortDescription": "DIN rail mount for UniFi compact switches.",
@@ -7639,5 +7621,43 @@
         }
       }
     ]
+  },
+  {
+    "id": "a996e392-c729-45df-8496-6485d6d16dd0",
+    "title": "G3 Gate Access Starter Kit",
+    "shortDescription": "Starter kit with a Gate Hub, G3 Intercom, PoE++ adapter, and PoE++ over twisted pair extender for access control at a single gate with Touch Pass support.",
+    "slug": "ua-g3-sk-gate",
+    "thumbnail": {
+      "url": "https://cdn.ecomm.ui.com/products/a996e392-c729-45df-8496-6485d6d16dd0/ded0458f-3e8b-465e-b342-a79a905f3ee0.png"
+    },
+    "variants": [
+      {
+        "id": "ce20b27a-ef2e-4eea-b346-953abe3c12b7",
+        "displayPrice": {
+          "amount": 79900,
+          "currency": "USD"
+        }
+      }
+    ],
+    "_discoveredAt": 1745017938180
+  },
+  {
+    "id": "f33f0978-61ef-403d-915f-3445e1cf6fa1",
+    "title": "Hot-Swappable Fan Module",
+    "shortDescription": "Hot-swappable fan module with front-to-back airflow.",
+    "slug": "uacc-fan-4020",
+    "thumbnail": {
+      "url": "https://cdn.ecomm.ui.com/products/f33f0978-61ef-403d-915f-3445e1cf6fa1/4d3f28b1-a5e2-48a7-a1aa-37f6494f5973.png"
+    },
+    "variants": [
+      {
+        "id": "39842126-e1ed-4d87-84b6-66e7e4c69f15",
+        "displayPrice": {
+          "amount": 6900,
+          "currency": "USD"
+        }
+      }
+    ],
+    "_discoveredAt": 1745032949756
   }
 ]
