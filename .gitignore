@@ -25,3 +25,6 @@ dist-ssr
 .cursorrules
 .cursor/rules
 *.mdc
+
+# Ignore Cursor rules
+.cursor/rules/*
